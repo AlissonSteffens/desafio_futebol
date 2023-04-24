@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
+import sys
 
-frame = cv2.imread("Teste_1.jpg")
+img_name = sys.argv[1]
+frame = cv2.imread(img_name)
 hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 mask_green = cv2.inRange(hsv, (36, 25, 25), (86, 255, 255)) # green mask to select only the field
 frame_masked = cv2.bitwise_and(frame, frame, mask=mask_green)

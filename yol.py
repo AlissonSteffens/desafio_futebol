@@ -1,6 +1,7 @@
 import torch
 import cv2
 import numpy as np
+import sys
 
 def plot_one_box(points, img, color=None, label=None, line_thickness=None):
     tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
@@ -43,9 +44,8 @@ def get_bounding_box_player_foot(bounding_box):
 # Model
 model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
 
-# Images
-img = "Teste_Desafio.png"  # or file, Path, PIL, OpenCV, numpy, list
-
+# Image from argument
+img = sys.argv[1]
 # Inference
 results = model(img)
 
