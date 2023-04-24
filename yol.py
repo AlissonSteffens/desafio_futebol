@@ -45,23 +45,26 @@ def get_bounding_box_player_foot(bounding_box):
 model = torch.hub.load("ultralytics/yolov5", "yolov5s")  # or yolov5n - yolov5x6, custom
 
 # Image from argument
-img = sys.argv[1]
-# Inference
-results = model(img)
+img_path = sys.argv[1]
 
 # load image with OpenCV, to draw on it later
-img = cv2.imread(img)
+img = cv2.imread(img_path)
 
-# get results keys
-print(results)
+# Inference
+results = model(img)
 
 # get bounding boxes
 boundingBoxes = results.xyxy[0]
 
 
-
-# Results
-boundingBoxes = results.xyxy[0]
+count = 0
+for *xyxy, conf, cls in reversed(boundingBoxes):
+    # only continue if is a person
+    if model.names[int(cls)] != "person":
+        continue
+    cropped_img = img[int(xyxy[1]):int(xyxy[3]), int(xyxy[0]):int(xyxy[2])]
+    cv2.imwrite(f"players/{count}.jpg", cropped_img)
+    count += 1
 
 # Draw bounding boxes and labels of detections
 for *xyxy, conf, cls in reversed(boundingBoxes):
@@ -72,6 +75,10 @@ for *xyxy, conf, cls in reversed(boundingBoxes):
     plot_one_box(xyxy, img, color=get_bounding_box_main_color(img, xyxy), label=label, line_thickness=3)
 
 
+positions = {}
+
+count = 0
+
 # Draw player center over bounding box
 for *xyxy, conf, cls in reversed(boundingBoxes):
     # only continue if is a person
@@ -80,6 +87,16 @@ for *xyxy, conf, cls in reversed(boundingBoxes):
     center = get_bounding_box_player_foot(xyxy)
     # draw point
     cv2.circle(img, center, 5, (0, 0, 255), 2)
+    # draw object number
+    cv2.putText(img, str(count), center, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+    # save position
+    positions[count] = center
+    count += 1
+
+# save positions to file
+with open("positions.txt", "w") as f:
+    for key, value in positions.items():
+        f.write(f"{key} {value[0]} {value[1]}\n")   
     
 # Show image
 cv2.imshow("image", img)
